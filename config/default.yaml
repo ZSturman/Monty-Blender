@@ -1,0 +1,102 @@
+# Blender+Monty Visual Agent Configuration
+# ==========================================
+
+# Network settings
+network:
+  host: "127.0.0.1"
+  port: 5555
+
+# Rendering settings
+render:
+  width: 320
+  height: 240
+  engine: "CYCLES"  # CYCLES or BLENDER_EEVEE
+  samples: 1
+  gpu: false
+  gpu_device_type: "METAL"  # METAL (macOS), CUDA, OPTIX (Linux/Windows)
+
+# Camera settings
+camera:
+  default: "Camera"  # Default camera name in scene
+  position_scale: 0.05  # Blender units per action unit
+  rotation_scale: 0.02  # Radians per action unit
+
+# Available cameras in scene (auto-discovered if empty)
+# Add entries here to define aliases and descriptions
+cameras:
+  # Example:
+  # - name: "Camera"
+  #   alias: "Main"
+  #   description: "Default perspective view"
+  # - name: "CloseUpCam"
+  #   alias: "CloseUp"
+  #   description: "50mm close-up lens"
+
+# Movement presets
+movement_presets:
+  orbit:
+    description: "Rotate around the scene center"
+    pattern:
+      - { dpos: [0, 0, 0], drot: [0, 0, 0.02] }  # Yaw rotation
+    duration: 100  # steps before switching to next phase
+
+  approach:
+    description: "Move toward the mesh center"
+    pattern:
+      - { dpos: [0, 0.05, 0], drot: [0, 0, 0] }  # Forward
+      - { dpos: [0, 0.05, -0.01], drot: [0, 0, 0] }  # Forward + slight down
+    duration: 50
+
+  overview:
+    description: "High angle pan across scene"
+    pattern:
+      - { dpos: [0.02, 0, 0], drot: [0, 0, 0.01] }  # Lateral + slight yaw
+    duration: 80
+
+  full_exploration:
+    description: "Combined approach, orbit, and zoom sequence"
+    phases:
+      - preset: approach
+        steps: 30
+      - preset: orbit
+        steps: 100
+      - preset: overview
+        steps: 50
+
+# Stopping conditions
+stopping:
+  max_steps: 500  # Maximum observations before stopping
+  motion_threshold: 0.001  # Motion energy threshold for "no change"
+  stable_frames: 30  # Consecutive low-motion frames to trigger stop
+  min_steps: 50  # Minimum steps before allowing early stop
+
+# Labeling settings
+labeling:
+  similarity_threshold: 0.92  # Cosine similarity for signature matching
+  min_pixels: 200  # Minimum pixels for object detection
+  stable_steps: 10  # Frames object must appear before prompting
+  prompt_timeout: 30  # Seconds to wait for user input (0 = no timeout)
+  auto_label_prefix: "unknown"  # Prefix for auto-generated labels
+
+# Output settings
+output:
+  base_dir: "output"  # Base directory for session outputs
+  save_images: true
+  save_depth: false  # Depth maps as numpy files
+  save_metadata: true
+  image_format: "png"  # png or jpg
+
+# Display settings
+display:
+  show_window: true
+  window_scale: 1.0  # Scale factor for display window
+  show_motion_energy: true
+  show_depth: false
+  show_labels: true
+  show_status_overlay: true
+  fps_limit: 30
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: null  # Log file path (null = console only)
